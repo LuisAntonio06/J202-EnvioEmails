@@ -1,124 +1,187 @@
-document.addEventListener('DOMContentLoaded', function() {
+// VARIABLES
+const year = document.querySelector('#year');
+const marca = document.querySelector('#marca');
+const minimo = document.querySelector('#minimo');
+const maximo = document.querySelector('#maximo');
+const puertas = document.querySelector('#puertas');
+const transmision = document.querySelector('#transmision');
+const color = document.querySelector('#color');
 
-    const email = {
-        email: '',
-        asunto: '',
-        mensaje: ''
+// Contenedor para los resultados
+const resultado = document.querySelector('#resultado');
+
+const max = new Date().getFullYear();
+const min = max - 10;
+
+// Generar un objeto con la busqueda
+const datosBusqueda = {
+    marca: '',
+    year: '',
+    minimo: '',
+    maximo: '',
+    puertas: '',
+    transmision: '',
+    color: '',
+}
+
+//EVENTOS
+document.addEventListener('DOMContentLoaded', () => {
+    mostrarAutos(autos); // Muestra los autos al cargar
+
+    
+    // Llena las opciones de años
+    llenarSelect();
+
+})
+
+// Event Listener para los selects de búsqueda
+marca.addEventListener('change' , e => {
+    datosBusqueda.marca = e.target.value;
+
+    filtrarAuto();
+})
+year.addEventListener('change' , e => {
+    datosBusqueda.year = parseInt(e.target.value);
+
+    filtrarAuto();
+})
+minimo.addEventListener('change' , e => {
+    datosBusqueda.minimo = parseInt(e.target.value);
+
+    console.log(datosBusqueda);
+    filtrarAuto();
+})
+maximo.addEventListener('change' , e => {
+    datosBusqueda.maximo = parseInt(e.target.value);
+
+    filtrarAuto();
+})
+puertas.addEventListener('change' , e => {
+    datosBusqueda.puertas =  parseInt(e.target.value);
+
+    filtrarAuto();
+})
+transmision.addEventListener('change' , e => {
+    datosBusqueda.transmision = e.target.value;
+
+    filtrarAuto();
+})
+color.addEventListener('change' , e => {
+    datosBusqueda.color = e.target.value;
+
+    filtrarAuto();
+})
+
+
+//FUNCIONES
+function mostrarAutos(autos){ 
+
+    limpiarHTML() // Elimina el HTML previo
+
+    autos.forEach( auto => {
+
+        const {marca, modelo , year, puertas, transmision, precio, color} = auto;
+        const autoHTML = document.createElement('p');
+
+        autoHTML.textContent = `
+            ${marca} ${modelo} - ${year} - ${puertas} - Puertas - Transmisión: ${transmision} - Precio : $${precio} - Color: ${color}
+
+        `;
+
+        // Insertar en el HTML
+        resultado.appendChild(autoHTML);
+    });
+}
+
+// Limpiar HTML
+function limpiarHTML(){
+    while(resultado.firstChild){
+        resultado.removeChild(resultado.firstChild);
     }
+}
 
-    // Seleccionar los elementos de la interfaz
-    const inputEmail = document.querySelector('#email');
-    const inputAsunto = document.querySelector('#asunto');
-    const inputMensaje = document.querySelector('#mensaje');
-    const formulario = document.querySelector('#formulario');
-    const btnSubmit = document.querySelector('#formulario button[type="submit"]');
-    const btnReset = document.querySelector('#formulario button[type="reset"]');
-    const spinner = document.querySelector('#spinner');
 
-    // Asignar eventos
-    inputEmail.addEventListener('input', validar);
-    inputAsunto.addEventListener('input', validar);
-    inputMensaje.addEventListener('input', validar);
+// Genera los años del select
+function llenarSelect() {
 
-    formulario.addEventListener('submit', enviarEmail);
-
-    btnReset.addEventListener('click', function(e) {
-        e.preventDefault();
-        resetFormulario();
-    })
-
-    function enviarEmail(e) {
-        e.preventDefault();
-
-        spinner.classList.add('flex');
-        spinner.classList.remove('hidden');
-
-        setTimeout(() => {
-            spinner.classList.remove('flex');
-            spinner.classList.add('hidden');
-
-            resetFormulario();
-
-            // Crear una alerta
-            const alertaExito = document.createElement('P');
-            alertaExito.classList.add('bg-green-500', 'text-white', 'p-2', 'text-center', 'rounded-lg', 'mt-10', 'font-bold', 'text-sm', 'uppercase');
-            alertaExito.textContent = 'Mensaje enviado correctamente';
-
-            formulario.appendChild(alertaExito);
-
-            setTimeout(() => {
-                alertaExito.remove(); 
-            }, 3000);
-        }, 3000);
+    for ( let i = max; i > min ; i--){
+        const opcion = document.createElement('option');
+        opcion.value = i;
+        opcion.textContent = i;
+        year.appendChild(opcion); // Agrega las opciones de año al Select
     }
+}
 
-    function validar(e) {
-        if(e.target.value.trim() === '') {
-            mostrarAlerta(`El Campo ${e.target.id} es obligatorio`, e.target.parentElement);
-            email[e.target.name] = '';
-            comprobarEmail();
-            return;
-        }
+// Función que filtra en base a la búsqueda
+function filtrarAuto() {
+    const resultado = autos.filter( filtrarMarca ).filter( filtrarYear ).filter (filtrarMinimo).filter(filtrarMaximo).filter ( filtrarPuertas ).filter (filtrarTransmision).filter ( filtrarColor )
 
-        if(e.target.id === 'email' && !validarEmail(e.target.value)) {
-            mostrarAlerta('El email no es válido', e.target.parentElement);
-            email[e.target.name] = '';
-            comprobarEmail();
-            return;
-        }
+    mostrarAutos(resultado);
 
-        limpiarAlerta(e.target.parentElement);
-
-        // Asignar los valores
-        email[e.target.name] = e.target.value.trim().toLowerCase();
-
-        // Comprobar el objeto de email
-        comprobarEmail();
+    if(resultado.length ) {
+        mostrarAutos(resultado);
+    } else {
+        noResultado();
     }
+} 
 
-    function mostrarAlerta(mensaje, referencia) {
-        limpiarAlerta(referencia);
-        
-        // Generar alerta en HTML
-        const error = document.createElement('P');
-        error.textContent = mensaje;
-        error.classList.add('bg-red-600', 'text-white', 'p-2', 'text-center');
-       
-        // Inyectar el error al formulario
-        referencia.appendChild(error);
+function noResultado(){
+
+    limpiarHTML();
+
+    const noResultado = document.createElement('div');
+    noResultado.classList.add('alerta' , 'error')
+    noResultado.textContent = 'No hay Resultados, Intenta con otros terminos de búsqueda';
+    resultado.appendChild(noResultado);
+
+}
+function filtrarMarca(auto) {
+    const {marca} = datosBusqueda;
+    if(marca){
+        return auto.marca === marca;
     }
-
-    function limpiarAlerta(referencia) {
-        // Comprueba si ya existe una alerta
-        const alerta = referencia.querySelector('.bg-red-600');
-        if(alerta) {
-            alerta.remove();
-        }
+    return auto;
+}
+function filtrarYear(auto) {
+    const { year } = datosBusqueda;
+    if(year){
+        return auto.year === (year);
     }
-
-    function validarEmail(email) {
-        const regex =  /^\w+([.-_+]?\w+)*@\w+([.-]?\w+)*(\.\w{2,10})+$/;
-        const resultado = regex.test(email);
-        return resultado;
+    return auto;
+}
+function filtrarMinimo(auto) {
+    const { minimo } = datosBusqueda;
+    if(minimo){
+        return auto.precio >= (minimo);
     }
-
-    function comprobarEmail() {
-        if(Object.values(email).includes('')) {
-            btnSubmit.classList.add('opacity-50');
-            btnSubmit.disabled = true;
-            return
-        } 
-        btnSubmit.classList.remove('opacity-50');
-        btnSubmit.disabled = false;
+    return auto;
+}
+function filtrarMaximo(auto) {
+    const { maximo } = datosBusqueda;
+    if(maximo){
+        return auto.precio <= (maximo);
     }
-
-    function resetFormulario() {
-        // reiniciar el objeto
-        email.email = '';
-        email.asunto = '';
-        email.mensaje = '';
-
-        formulario.reset();
-        comprobarEmail();
+    return auto;
+}
+function filtrarPuertas(auto) {
+    const { puertas } = datosBusqueda;
+    if(puertas){
+        return auto.puertas === puertas;
     }
-});
+    return auto;
+}
+function filtrarTransmision(auto) {
+    const { transmision } = datosBusqueda;
+    if(transmision){
+        return auto.transmision === transmision;
+    }
+    return auto;
+}
+function filtrarColor(auto) {
+    const { color } = datosBusqueda;
+    if(color){
+        return auto.color === color;
+    }
+    return auto;
+}
+
